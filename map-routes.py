@@ -65,8 +65,11 @@ def collectRoutesFromASN(ASN):
 def getRouteForIP(IP):
 	URL = f"https://bgp.he.net/super-lg/api/v1/show/bgp/route/{IP}?match-asn=&match-type=all&search-type=exact&match-neighbor="
 	response = requests.get(URL)
-	route = response.json()["prefixes"][0]
-	return route
+	if len(response.json()["prefixes"]) > 0:
+		route = response.json()["prefixes"]
+		return route
+	else:
+		return IP
 	
 			
 def collectASNs(table_rows):
@@ -131,14 +134,11 @@ def cmdResolve(args):
 	if args.domain:
 		IPs = resolve(args.domain)
 		[print(ip) for ip in IPs]
-	
-			
+		
 def cmdIP(args):
-	route_list = []
 	if args.address:
 		route = getRouteForIP(args.address)
-		route_list.append(route)
-		dumpRoutesforASN(getRoutesInfo(route_list))
+		dumpRoutesforASN(getRoutesInfo(route))
 		
 		
 	
