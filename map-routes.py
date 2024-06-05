@@ -70,7 +70,8 @@ def getRouteForIP(IP):
 	response = requests.get(URL)
 	if len(response.json()["prefixes"]) > 0:
 		route = response.json()["prefixes"]
-		return route
+		details = response.json()["response"][0]["asnmap"][list(response.json()["response"][0]["asnmap"].keys())[0]]
+		return route, details
 	else:
 		return IP
 	
@@ -99,6 +100,11 @@ def processASN(ASN):
 
 def dumpRoutesforASN(routes):
 	print(tabulate(routes, headers = ["Route", "Country", "Org", "Status", "isValid"]))
+	print()
+	
+def dumpInfoForIP(details):
+	details = list(details.values())
+	print(tabulate(([details]), headers = ["ASN", "COUNTRY", "DESC", "ORG", "ROUTE"]))
 	print()
 	
 def dumpASNs(ASNs):
@@ -140,10 +146,13 @@ def cmdResolve(args):
 		
 def cmdIP(args):
 	if args.address:
-		route = getRouteForIP(args.address)
-		dumpRoutesforASN(getRoutesInfo(route))
-		
-		
+		route, details = getRouteForIP(args.address)
+		details['Route'] = route[0]
+		if type(route) is not str: 
+			#dumpRoutesforASN(getRoutesInfo(route))
+			dumpInfoForIP(details)
+		else:
+			print(route)
 
 def checkIPinAWSRange(IP):
 	if IP in aws_ip_ranges:
