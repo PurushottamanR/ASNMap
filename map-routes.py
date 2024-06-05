@@ -1,3 +1,5 @@
+
+import awsipranges
 import dns.resolver
 import re
 import requests
@@ -8,6 +10,7 @@ import argparse
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
+aws_ip_ranges = awsipranges.get_ranges()
 MISC_ROUTES_IPv4 = set()
 
 def checkValid(ASN):
@@ -141,7 +144,22 @@ def cmdIP(args):
 		dumpRoutesforASN(getRoutesInfo(route))
 		
 		
+
+def checkIPinAWSRange(IP):
+	if IP in aws_ip_ranges:
+		return aws_ip_ranges[IP]
 	
+	
+def cmdAWS(args):
+	if args.address:
+		info = checkIPinAWSRange(args.address)
+		if info:
+			print(f"{args.address} found in AWS range")
+			print(f"Route: {info}") 
+			print(f"Region: {info.region}")
+			print(f"Services: {info.services}")
+		else:
+			print(f"{args.address} not found in AWS range")
 		
 def main():
 	parser = argparse.ArgumentParser()
@@ -162,8 +180,15 @@ def main():
 	command_IP = subparsers.add_parser("IP")
 	command_IP.add_argument("address", help = "address to fetch info for")
 	command_IP.set_defaults(func = cmdIP)
-	args = parser.parse_args()
 	
+	command_AWS = subparsers.add_parser("AWS")
+	command_AWS.add_argument("address", help = "IP to search for in AWS ranges")
+	command_AWS.set_defaults(func = cmdAWS)
+
+
+
+	args = parser.parse_args()
+
 	try:
 		args.func(args)
 		
