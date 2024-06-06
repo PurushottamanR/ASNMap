@@ -70,7 +70,8 @@ def getRouteForIP(IP):
 	response = requests.get(URL)
 	if len(response.json()["prefixes"]) > 0:
 		route = response.json()["prefixes"]
-		details = response.json()["response"][0]["asnmap"][list(response.json()["response"][0]["asnmap"].keys())[0]]
+		valid_asn = response.json()["response"][0]["rpki"]["response"]["validated_route"]["route"]["origin_asn"][2:]
+		details = response.json()["response"][0]["asnmap"][valid_asn]
 		return route, details
 	else:
 		return IP
